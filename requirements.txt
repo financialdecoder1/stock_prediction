@@ -1,9 +1,7 @@
 yfinance
 pandas
 numpy
-matplotlib
 pystan
 fbprophet
 plotly
-datetime
 streamlit==1.4.0
