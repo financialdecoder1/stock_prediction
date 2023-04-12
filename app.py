@@ -56,29 +56,21 @@ def main():
     st.write(data)
 
     # Make prediction
-    prediction = make_prediction(data, years)
+    future_dates = get_future_dates(data, years)
+    predicted_values = make_prediction(data, years)
+    predicted_values_list = list(predicted_values)
+
+    # Create plot
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name='Historical Values'))
+    fig.add_trace(go.Scatter(x=future_dates, y=predicted_values_list, name='Predicted Values'))
+
+    st.plotly_chart(fig)
 
     # Display prediction
     st.subheader(f'Predicted closing price for {ticker} on the last day of {years} years from now')
     st.write(f'Predicted closing price: {round(prediction, 2)}')
-    # Create plot of historical data and predicted values
-    fig = go.Figure()
-
-    # Add historical data to plot
-    fig.add_trace(go.Scatter(x=data.index, y=data['Close'], name='Historical Data'))
-
-    # Add predicted values to plot
-    future_dates = pd.date_range(start=data.index[-1], periods=365*years, freq='D')[1:]
-    future_dates = future_dates.strftime('%Y-%m-%d')
-    fig.add_trace(go.Scatter(x=future_dates, y=[float(y) for y in make_prediction(data, years)], name='Predicted Values'))
-
-
-    # Set plot layout
-    fig.update_layout(title=f'{ticker} Stock Price', xaxis_title='Date', yaxis_title='Price')
-
-    # Display plot
-    st.plotly_chart(fig)
-
+    
 # Run the app
 if __name__ == '__main__':
     main()
