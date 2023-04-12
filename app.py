@@ -1,24 +1,25 @@
 import streamlit as st
 from datetime import date
-
-import yfinance as yf 
-from fbprophet import Prophet 
-from fbprophet.plot import plot_plotly 
-from plotly import graph_objs as go
+import yfinance as yf
+from sklearn.linear_model import LinearRegression
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+from matplotlib import dates as mdates
 
 START = "2023-01-01"
 TODAY = "2023-04-11"
-st.title("Stock Prediciton App")
+st.title("Stock Prediction App")
 stocks = ('ADANIENT.NS', 'APOLLOHOSP.NS','BAJAJ-AUTO.NS', 'BAJAJFINSV.NS', 'BAJFINANCE.NS', 'BHARTIARTL.NS', 'BRITANNIA.NS', 'CIPLA.NS', 'COALINDIA.NS', 'HDFCLIFE.NS', 'HEROMOTOCO.NS', 'HINDALCO.NS', 'ICICIBANK.NS', 'INDUSINDBK.NS', 'ITC.NS', 'KOTAKBANK.NS', 'LT.NS', 'MARUTI.NS', 'MM.NS', 'NESTLEIND.NS', 'NTPC.NS', 'ONGC.NS', 'RELIANCE.NS', 'TATACONSUM.NS', 'TATASTEEL.NS', 'TCS.NS', 'TECHM.NS', 'TITAN.NS', 'ULTRACEMCO.NS', 'WIPRO.NS')
-selected_stock = st.selectbox("Select dataset for prediction",stocks)
-n_years = st.slider("Years of predictions: ",1,4)
+selected_stock = st.selectbox("Select dataset for prediction", stocks)
+n_years = st.slider("Years of predictions: ", 1, 4)
 period = n_years*365
 
 @st.cache_data
 def load_data(ticker):
-  data = yf.download(ticker,START,TODAY) #returns pd df
-  data.reset_index(inplace = True) #puts the date in 1st column
-  return data 
+    data = yf.download(ticker, START, TODAY)
+    data.reset_index(inplace=True)
+    return data
 
 data_load_state = st.text("Load data...")
 data = load_data(selected_stock)
@@ -28,31 +29,58 @@ st.subheader('Raw Data')
 st.write(data.tail())
 
 def plot_raw_data():
-  fig = go.Figure()
-  fig.add_trace(go.Scatter(x=data['Date'],y=data['Open'],name='stock_open'))
-  fig.add_trace(go.Scatter(x=data['Date'],y=data['Open'],name='stock_open'))
-  fig.layout.update(title_text="Time Series Data",xaxis_rangeslider_visible=True)
-  st.plotly_chart(fig)
+    fig, ax = plt.subplots()
+    ax.plot(data['Date'], data['Close'], label='stock_close')
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Price')
+    ax.set_title('Time Series Data')
+    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%Y'))
+    ax.legend()
+    st.pyplot(fig)
 
 plot_raw_data()
 
-# Forcasting using fbprophet
-df_train=data[['Date','Close']]
+# Linear Regression
+df_train = data[['Date', 'Close']]
 df_train = df_train.rename(columns={"Date":"ds","Close":"y"})
+df_train['ds'] = pd.to_datetime(df_train['ds'])
+df_train['ds'] = df_train['ds'].map(mdates.date2num)
 
-# create model
-m = Prophet()
-m.fit(df_train)
-future = m.make_future_dataframe(periods=period)
+X_train = np.array(df_train['ds']).reshape(-1, 1)
+y_train = np.array(df_train['y'])
 
-forecast = m.predict(future)
-st.subheader('Forcast Data')
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+future_dates = np.array([df_train['ds'].iloc[-1] + pd.DateOffset(days=x) for x in range(1, period+1)])
+future_dates = future_dates.map(mdates.date2num)
+future_dates = future_dates.reshape(-1, 1)
+
+y_pred = model.predict(future_dates)
+forecast = pd.DataFrame({'ds': future_dates.flatten(), 'y': y_pred})
+
+forecast['ds'] = pd.to_datetime(forecast['ds'])
+forecast['ds'] = forecast['ds'].map(mdates.date2num)
+
+st.subheader('Predicted Data')
+
+fig, ax = plt.subplots()
+ax.plot(data['Date'], data['Close'], label='Actual')
+ax.plot(forecast['ds'], forecast['y'], label='Predicted')
+ax.set_xlabel('Date')
+ax.set_ylabel('Price')
+ax.set_title('Predicted Data')
+ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%Y'))
+ax.legend()
+st.pyplot(fig)
+
+st.subheader('Predicted Data')
 st.write(forecast.tail())
 
-st.write('forcast data')
-fig1 = plot_plotly(m,forecast)
-st.plotly_chart(fig1)
+st.subheader('Prediction Data Statistics')
+st.write(forecast.describe())
 
-st.write('forcast components')
-fig2=m.plot_components(forecast)
-st.write(fig2)
+st.subheader('Predicted Data')
+st.write(forecast)
