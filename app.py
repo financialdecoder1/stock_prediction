@@ -1,112 +1,86 @@
 import streamlit as st
-from datetime import date
-import yfinance as yf
-import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-from matplotlib import dates as mdates
+import numpy as np
+import yfinance as yf
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM, Dense, Dropout
-
-START = "2023-01-01"
-TODAY = "2023-04-11"
-st.title("Stock Prediction App")
+from tensorflow.keras.layers import Dense, LSTM
+from tensorflow.keras.callbacks import EarlyStopping
 stocks = ('ADANIENT.NS', 'APOLLOHOSP.NS','BAJAJ-AUTO.NS', 'BAJAJFINSV.NS', 'BAJFINANCE.NS', 'BHARTIARTL.NS', 'BRITANNIA.NS', 'CIPLA.NS', 'COALINDIA.NS', 'HDFCLIFE.NS', 'HEROMOTOCO.NS', 'HINDALCO.NS', 'ICICIBANK.NS', 'INDUSINDBK.NS', 'ITC.NS', 'KOTAKBANK.NS', 'LT.NS', 'MARUTI.NS', 'MM.NS', 'NESTLEIND.NS', 'NTPC.NS', 'ONGC.NS', 'RELIANCE.NS', 'TATACONSUM.NS', 'TATASTEEL.NS', 'TCS.NS', 'TECHM.NS', 'TITAN.NS', 'ULTRACEMCO.NS', 'WIPRO.NS')
-selected_stock = st.selectbox("Select dataset for prediction", stocks)
-n_years = st.slider("Years of predictions: ", 1, 4)
-period = n_years*365
-
-@st.cache_data
-def load_data(ticker):
-    data = yf.download(ticker, START, TODAY)
-    data.reset_index(inplace=True)
+# Define function to get stock data
+def get_stock_data(ticker, start_date, end_date):
+    data = yf.download(ticker, start_date, end_date)
     return data
 
-data_load_state = st.text("Load data...")
-data = load_data(selected_stock)
-data_load_state.text("Loading data... Done!")
+# Define function to create dataset
+def create_dataset(dataset, time_steps=1):
+    X, y = [], []
+    for i in range(len(dataset)-time_steps):
+        X.append(dataset[i:(i+time_steps)])
+        y.append(dataset[i+time_steps])
+    return np.array(X), np.array(y)
 
-st.subheader('Raw Data')
-st.write(data.tail())
+# Define app
+def main():
+    # Set app title
+    st.title("Stock Price Prediction App")
 
-def plot_raw_data():
+    # Define sidebar
+    st.sidebar.title("Enter Stock Information")
+
+    # Get user input
+    ticker = st.selectbox("Select dataset for prediction", stocks)
+    start_date = st.sidebar.date_input("Start Date", value=pd.to_datetime("2020-01-01"))
+    end_date = st.sidebar.date_input("End Date", value=pd.to_datetime("2022-01-01"))
+
+    # Get stock data
+    data = get_stock_data(ticker, start_date, end_date)
+
+    # Display stock data
+    st.write("### Stock Data")
+    st.write(data)
+
+    # Create dataset
+    df = pd.DataFrame(data["Close"])
+    scaler = MinMaxScaler()
+    dataset = scaler.fit_transform(df)
+    time_steps = 6
+    X, y = create_dataset(dataset, time_steps)
+
+    # Split dataset into training and testing sets
+    split_ratio = 0.8
+    split_index = int(split_ratio * len(dataset))
+    X_train, y_train = X[:split_index], y[:split_index]
+    X_test, y_test = X[split_index:], y[split_index:]
+
+    # Build LSTM model
+    model = Sequential()
+    model.add(LSTM(50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
+    model.add(LSTM(50, return_sequences=True))
+    model.add(LSTM(50))
+    model.add(Dense(1))
+    model.compile(loss="mean_squared_error", optimizer="adam")
+
+    # Fit model
+    early_stop = EarlyStopping(monitor="val_loss", patience=5, verbose=1)
+    history = model.fit(X_train.reshape((X_train.shape[0], X_train.shape[1], 1)), y_train, validation_split=0.2, epochs=100, batch_size=32, callbacks=[early_stop])
+
+    # Plot training and validation loss
     fig, ax = plt.subplots()
-    ax.plot(data['Date'], data['Close'], label='stock_close')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Price')
-    ax.set_title('Time Series Data')
-    ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%Y'))
+    ax.plot(history.history["loss"], label="Training Loss")
+    ax.plot(history.history["val_loss"], label="Validation Loss")
+    ax.set_xlabel("Epoch")
+    ax.set_ylabel("Loss (MSE)")
+    ax.set_title("Training and Validation Loss")
     ax.legend()
     st.pyplot(fig)
 
-plot_raw_data()
+    # Make predictions
+    y_train_pred = model.predict(X_train.reshape((X_train.shape[0], X_train.shape[1], 1)))
+    y_test_pred = model.predict(X_test.reshape((X_test.shape[0], X_test.shape[1], 1)))
 
-# LSTM Model
-df_train = data[['Date', 'Close']]
-df_train = df_train.rename(columns={"Date":"ds","Close":"y"})
-df_train['ds'] = pd.to_datetime(df_train['ds'])
-
-# Add more features
-df_train['year'] = df_train['ds'].dt.year
-df_train['month'] = df_train['ds'].dt.month
-df_train['day'] = df_train['ds'].dt.day
-df_train['dayofweek'] = df_train['ds'].dt.dayofweek
-df_train['dayofyear'] = df_train['ds'].dt.dayofyear
-df_train['weekofyear'] = df_train['ds'].dt.isocalendar().week.astype(int)
-
-X_train = df_train.drop(['ds', 'y'], axis=1)
-y_train = df_train['y']
-
-# Normalize data
-from sklearn.preprocessing import MinMaxScaler
-scaler = MinMaxScaler()
-X_train = scaler.fit_transform(X_train)
-y_train = scaler.fit_transform(y_train.values.reshape(-X_train.shape[1], 1))
-model = Sequential()
-model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
-model.add(Dropout(0.2))
-model.add(LSTM(units=50, return_sequences=True))
-model.add(Dropout(0.2))
-model.add(LSTM(units=50))
-model.add(Dropout(0.2))
-model.add(Dense(units=1))
-model.compile(optimizer='adam', loss='mean_squared_error')
-    
-# Early stopping callback to prevent overfitting
-from tensorflow.keras.callbacks import EarlyStopping
-early_stop = EarlyStopping(monitor='val_loss', patience=10)
-
-# Train the model
-history = model.fit(X_train, y_train, validation_split=0.2, epochs=10, batch_size=32, callbacks=[early_stop])
-# Prepare the test data
-test_start_date = date.today()
-test_end_date = test_start_date.replace(year=test_start_date.year + n_years)
-test_data = yf.download(selected_stock, test_start_date.strftime('%Y-%m-%d'), test_end_date.strftime('%Y-%m-%d'))
-test_data.reset_index(inplace=True)
-test_data = test_data.rename(columns={"Date":"ds","Close":"y"})
-test_data['ds'] = pd.to_datetime(test_data['ds'])
-test_data['year'] = test_data['ds'].dt.year
-test_data['month'] = test_data['ds'].dt.month
-test_data['day'] = test_data['ds'].dt.day
-test_data['dayofweek'] = test_data['ds'].dt.dayofweek
-test_data['dayofyear'] = test_data['ds'].dt.dayofyear
-test_data['weekofyear'] = test_data['ds'].dt.isocalendar().week.astype(int)
-X_test = test_data.drop(['ds', 'y'], axis=1)
-y_test = test_data['y']
-X_test = scaler.transform(X_test)
-
-# Predict the stock prices
-y_pred = model.predict(X_test)
-y_pred = scaler.inverse_transform(y_pred)
-
-# Plot the predictions
-fig, ax = plt.subplots()
-ax.plot(test_data['ds'], y_test, label='Actual')
-ax.plot(test_data['ds'], y_pred, label='Predicted')
-ax.set_xlabel('Date')
-ax.set_ylabel('Price')
-ax.set_title('Predictions')
-ax.legend()
-st.pyplot(fig)
-
+    # Transform predictions back to original scale
+    y_train_pred = scaler.inverse_transform(y_train_pred)
+    y_train_true = scaler.inverse_transform(y_train[:len(y_train_pred)])
+    y_test_pred = scaler.inverse_transform(y_test_pred
