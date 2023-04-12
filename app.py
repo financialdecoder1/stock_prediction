@@ -78,7 +78,7 @@ from tensorflow.keras.callbacks import EarlyStopping
 early_stop = EarlyStopping(monitor='val_loss', patience=10)
 
 # Train the model
-history = model.fit(X_train, y_train, validation_split=0.2, epochs=100, batch_size=32, callbacks=[early_stop])
+history = model.fit(X_train, y_train, validation_split=0.2, epochs=10, batch_size=32, callbacks=[early_stop])
 # Prepare the test data
 test_start_date = date.today()
 test_end_date = test_start_date.replace(year=test_start_date.year + n_years)
