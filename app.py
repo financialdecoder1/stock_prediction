@@ -31,8 +31,8 @@ def main():
 
     # Get user input
     ticker = st.selectbox("Select dataset for prediction", stocks)
-    start_date = st.sidebar.date_input("Start Date", value=pd.to_datetime("2020-01-01"))
-    end_date = st.sidebar.date_input("End Date", value=pd.to_datetime("2022-01-01"))
+    start_date = st.sidebar.date_input("Start Date", value=pd.to_datetime("2023-01-01"))
+    end_date = st.sidebar.date_input("End Date", value=pd.to_datetime("2023-11-04"))
 
     # Get stock data
     data = get_stock_data(ticker, start_date, end_date)
