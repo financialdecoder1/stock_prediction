@@ -5,3 +5,4 @@ matplotlib
 pystan~=2.14
 fbprophet
 plotly streamlit yfinance
+datetime
