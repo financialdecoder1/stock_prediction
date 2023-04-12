@@ -2,7 +2,7 @@ yfinance
 pandas
 numpy
 matplotlib
-pystan~=2.14
+pystan
 fbprophet
 plotly
 datetime
