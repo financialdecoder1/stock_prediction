@@ -12,7 +12,10 @@ st.set_page_config(page_title='Stock Prediction App')
 def load_data(ticker):
     data = yf.download(ticker, start='2023-01-01')
     return data
-
+def get_future_dates(data, years):
+    last_date = data['Date'].max()
+    future_dates = pd.date_range(last_date, periods=12*years+1, freq='MS')[1:]
+    return future_dates.strftime('%Y-%m-%d').tolist()
 # Define function to make stock predictions
 @st.cache
 # Define function to make stock predictions
@@ -38,10 +41,7 @@ def make_prediction(data, years):
     return prediction
 
 # Define Streamlit app
-def get_future_dates(data, years):
-    last_date = data['Date'].max()
-    future_dates = pd.date_range(last_date, periods=12*years+1, freq='MS')[1:]
-    return future_dates.strftime('%Y-%m-%d').tolist()
+
 
 # Define Streamlit app
 def main():
