@@ -12,10 +12,6 @@ st.set_page_config(page_title='Stock Prediction App')
 def load_data(ticker):
     data = yf.download(ticker, start='2023-01-01')
     return data
-def get_future_dates(data, years):
-    last_date = data['Date'].max()
-    future_dates = pd.date_range(last_date, periods=12*years+1, freq='MS')[1:]
-    return future_dates.strftime('%Y-%m-%d').tolist()
 # Define function to make stock predictions
 @st.cache
 # Define function to make stock predictions
@@ -61,17 +57,11 @@ def main():
     st.write(data)
 
     # Make prediction
-    future_dates = get_future_dates(data, years)
+   
     predicted_values = make_prediction(data, years)
     predicted_values_list = list(predicted_values)
 
-    # Create plot
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=data['Date'], y=data['Close'], name='Historical Values'))
-    fig.add_trace(go.Scatter(x=future_dates, y=predicted_values_list, name='Predicted Values'))
-
-    st.plotly_chart(fig)
-
+   
     # Display prediction
     st.subheader(f'Predicted closing price for {ticker} on the last day of {years} years from now')
     st.write(f'Predicted closing price: {round(prediction, 2)}')
