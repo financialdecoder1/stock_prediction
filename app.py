@@ -72,6 +72,7 @@ def main():
     future_dates = future_dates.strftime('%Y-%m-%d')
     fig.add_trace(go.Scatter(x=future_dates, y=[float(y) for y in make_prediction(data, years)], name='Predicted Values'))
 
+
     # Set plot layout
     fig.update_layout(title=f'{ticker} Stock Price', xaxis_title='Date', yaxis_title='Price')
 
