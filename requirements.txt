@@ -1,4 +1,3 @@
---upgrade pip
 yfinance
 pandas
 numpy
