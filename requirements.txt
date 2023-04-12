@@ -2,5 +2,6 @@ yfinance
 pandas
 numpy
 matplotlib
-Prophet-LSTM
+Prophet
+plot_plotly
 plotly
