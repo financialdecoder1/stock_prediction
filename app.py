@@ -80,7 +80,29 @@ def main():
     y_train_pred = model.predict(X_train.reshape((X_train.shape[0], X_train.shape[1], 1)))
     y_test_pred = model.predict(X_test.reshape((X_test.shape[0], X_test.shape[1], 1)))
 
-    # Transform predictions back to original scale
+        # Transform predictions back to original scale
     y_train_pred = scaler.inverse_transform(y_train_pred)
     y_train_true = scaler.inverse_transform(y_train[:len(y_train_pred)])
-    y_test_pred = scaler.inverse_transform(y_test_pred
+    y_test_pred = scaler.inverse_transform(y_test_pred)
+    y_test_true = scaler.inverse_transform(y_test[:len(y_test_pred)])
+
+    # Plot training predictions
+    fig, ax = plt.subplots()
+    ax.plot(y_train_true, label="True")
+    ax.plot(y_train_pred, label="Predicted")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Stock Price")
+    ax.set_title("Training Predictions")
+    ax.legend()
+    st.pyplot(fig)
+
+    # Plot testing predictions
+    fig, ax = plt.subplots()
+    ax.plot(y_test_true, label="True")
+    ax.plot(y_test_pred, label="Predicted")
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Stock Price")
+    ax.set_title("Testing Predictions")
+    ax.legend()
+    st.pyplot(fig)
+
