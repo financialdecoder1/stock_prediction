@@ -38,6 +38,11 @@ def make_prediction(data, years):
     return prediction
 
 # Define Streamlit app
+def get_future_dates(data, years):
+    last_date = data['Date'].max()
+    future_dates = pd.date_range(last_date, periods=12*years+1, freq='MS')[1:]
+    return future_dates.strftime('%Y-%m-%d').tolist()
+
 # Define Streamlit app
 def main():
     # Set app title
