@@ -15,7 +15,9 @@ def load_data(ticker):
 
 # Define function to make stock predictions
 @st.cache
-def make_prediction(data):
+# Define function to make stock predictions
+@st.cache
+def make_prediction(data, years):
     # Rename columns to fit Prophet format
     data = data[['Close']]
     data = data.rename(columns={'Close': 'y'})
@@ -26,7 +28,7 @@ def make_prediction(data):
     model.fit(data)
 
     # Make predictions
-    future = model.make_future_dataframe(periods=365)
+    future = model.make_future_dataframe(periods=365*years)
     forecast = model.predict(future)
 
     # Get last date and prediction for that date
@@ -36,6 +38,7 @@ def make_prediction(data):
     return prediction
 
 # Define Streamlit app
+# Define Streamlit app
 def main():
     # Set app title
     st.title('Stock Prediction App')
@@ -43,6 +46,7 @@ def main():
     # Get user input
     stocks = ('ADANIENT.NS', 'APOLLOHOSP.NS','BAJAJ-AUTO.NS', 'BAJAJFINSV.NS', 'BAJFINANCE.NS', 'BHARTIARTL.NS', 'BRITANNIA.NS', 'CIPLA.NS', 'COALINDIA.NS', 'HDFCLIFE.NS', 'HEROMOTOCO.NS', 'HINDALCO.NS', 'ICICIBANK.NS', 'INDUSINDBK.NS', 'ITC.NS', 'KOTAKBANK.NS', 'LT.NS', 'MARUTI.NS', 'MM.NS', 'NESTLEIND.NS', 'NTPC.NS', 'ONGC.NS', 'RELIANCE.NS', 'TATACONSUM.NS', 'TATASTEEL.NS', 'TCS.NS', 'TECHM.NS', 'TITAN.NS', 'ULTRACEMCO.NS', 'WIPRO.NS')
     ticker = st.selectbox("Select dataset for prediction", stocks)
+    years = st.slider('Select number of years to predict', min_value=1, max_value=10, value=2)
 
     # Load data
     data = load_data(ticker)
@@ -52,11 +56,11 @@ def main():
     st.write(data)
 
     # Make prediction
-    prediction = make_prediction(data)
+    prediction = make_prediction(data, years)
 
     # Display prediction
-    st.subheader('Next Year Prediction')
-    st.write(f'Predicted closing price for {ticker} on the last day of next year: {round(prediction, 2)}')
+    st.subheader(f'Predicted closing price for {ticker} on the last day of {years} years from now')
+    st.write(f'Predicted closing price: {round(prediction, 2)}')
 
 # Run the app
 if __name__ == '__main__':
