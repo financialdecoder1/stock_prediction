@@ -59,7 +59,6 @@ def main():
     # Make prediction
    
     predicted_values = make_prediction(data, years)
-    predicted_values_list = list(predicted_values)
 
    
     # Display prediction
