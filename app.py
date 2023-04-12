@@ -53,7 +53,8 @@ y_train = np.array(df_train['y'])
 model = LinearRegression()
 model.fit(X_train, y_train)
 
-future_dates = np.array([df_train['ds'].iloc[-1] + pd.DateOffset(days=x) for x in range(1, period+1)])
+last_date = mdates.num2date(df_train['ds'].iloc[-1])
+future_dates = np.array([last_date + pd.DateOffset(days=x) for x in range(1, period+1)])
 future_dates = future_dates.map(mdates.date2num)
 future_dates = future_dates.reshape(-1, 1)
 
