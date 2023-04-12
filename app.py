@@ -16,6 +16,8 @@ def load_data(ticker):
 @st.cache
 # Define function to make stock predictions
 @st.cache
+# Define function to make stock predictions
+@st.cache
 def make_prediction(data, years):
     # Rename columns to fit Prophet format
     data = data[['Close']]
@@ -36,9 +38,11 @@ def make_prediction(data, years):
 
     return prediction
 
+
 # Define Streamlit app
 
 
+# Define Streamlit app
 # Define Streamlit app
 def main():
     # Set app title
@@ -57,13 +61,12 @@ def main():
     st.write(data)
 
     # Make prediction
-   
-    predicted_values = make_prediction(data, years)
+    prediction = make_prediction(data, years)
 
-   
     # Display prediction
     st.subheader(f'Predicted closing price for {ticker} on the last day of {years} years from now')
     st.write(f'Predicted closing price: {round(prediction, 2)}')
+
     
 # Run the app
 if __name__ == '__main__':
