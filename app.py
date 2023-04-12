@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import date
 import yfinance as yf
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -41,7 +41,7 @@ def plot_raw_data():
 
 plot_raw_data()
 
-# Linear Regression
+# Random Forest Regression
 df_train = data[['Date', 'Close']]
 df_train = df_train.rename(columns={"Date":"ds","Close":"y"})
 df_train['ds'] = pd.to_datetime(df_train['ds'])
@@ -50,13 +50,12 @@ df_train['ds'] = df_train['ds'].map(mdates.date2num)
 X_train = np.array(df_train['ds']).reshape(-1, 1)
 y_train = np.array(df_train['y'])
 
-model = LinearRegression()
+model = RandomForestRegressor(n_estimators=100, random_state=42)
 model.fit(X_train, y_train)
 
 future_dates = np.array([pd.to_datetime(df_train['ds'].iloc[-1]) + pd.DateOffset(days=x) for x in range(1, period+1)])
 future_dates = pd.Series(future_dates).apply(mdates.date2num)
 future_dates = future_dates.values.reshape(-1, 1)
-
 
 y_pred = model.predict(future_dates)
 forecast = pd.DataFrame({'ds': future_dates.flatten(), 'y': y_pred})
