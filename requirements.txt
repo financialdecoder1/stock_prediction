@@ -2,5 +2,4 @@ yfinance
 pandas
 numpy
 matplotlib
-Prophet
-plotly
+datetime
