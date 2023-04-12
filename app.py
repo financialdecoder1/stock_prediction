@@ -66,7 +66,6 @@ forecast['ds'] = forecast['ds'].map(mdates.date2num)
 st.subheader('Predicted Data')
 
 fig, ax = plt.subplots()
-ax.plot(data['Date'], data['Close'], label='Actual')
 ax.plot(forecast['ds'], forecast['y'], label='Predicted')
 ax.set_xlabel('Date')
 ax.set_ylabel('Price')
