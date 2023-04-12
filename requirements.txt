@@ -6,3 +6,4 @@ pystan~=2.14
 fbprophet
 plotly
 datetime
+streamlit==1.4.0
