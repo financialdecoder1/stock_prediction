@@ -61,6 +61,22 @@ def main():
     # Display prediction
     st.subheader(f'Predicted closing price for {ticker} on the last day of {years} years from now')
     st.write(f'Predicted closing price: {round(prediction, 2)}')
+    # Create plot of historical data and predicted values
+    fig = go.Figure()
+
+    # Add historical data to plot
+    fig.add_trace(go.Scatter(x=data.index, y=data['Close'], name='Historical Data'))
+
+    # Add predicted values to plot
+    future_dates = pd.date_range(start=data.index[-1], periods=365*years, freq='D')[1:]
+    future_dates = future_dates.strftime('%Y-%m-%d')
+    fig.add_trace(go.Scatter(x=future_dates, y=make_prediction(data, years), name='Predicted Values'))
+
+    # Set plot layout
+    fig.update_layout(title=f'{ticker} Stock Price', xaxis_title='Date', yaxis_title='Price')
+
+    # Display plot
+    st.plotly_chart(fig)
 
 # Run the app
 if __name__ == '__main__':
