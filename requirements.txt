@@ -1,6 +1,9 @@
+--upgrade pip
 yfinance
 pandas
 numpy
+matplotlib
+setuptools
 pystan
 fbprophet
 plotly
