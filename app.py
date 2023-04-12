@@ -70,7 +70,7 @@ def main():
     # Add predicted values to plot
     future_dates = pd.date_range(start=data.index[-1], periods=365*years, freq='D')[1:]
     future_dates = future_dates.strftime('%Y-%m-%d')
-    fig.add_trace(go.Scatter(x=future_dates, y=make_prediction(data, years), name='Predicted Values'))
+    fig.add_trace(go.Scatter(x=future_dates, y=[float(y) for y in make_prediction(data, years)], name='Predicted Values'))
 
     # Set plot layout
     fig.update_layout(title=f'{ticker} Stock Price', xaxis_title='Date', yaxis_title='Price')
