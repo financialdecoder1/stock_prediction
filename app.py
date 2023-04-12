@@ -7,9 +7,9 @@ from fbprophet.plot import plot_plotly
 from plotly import graph_objs as go
 
 START = "2015-01-01"
-TODAY = date.today().strftime("%Y-%m-%d")
+TODAY = "2023-04-11"
 st.title("Stock Prediciton App")
-stocks = ("BHARTIARTL.NS","ITC.NS","ARVINDFASN.NS","^GSPC","TATAMOTORS.NS","^NSEI")
+stocks = ('ADANIENT.NS', 'APOLLOHOSP.NS','BAJAJ-AUTO.NS', 'BAJAJFINSV.NS', 'BAJFINANCE.NS', 'BHARTIARTL.NS', 'BRITANNIA.NS', 'CIPLA.NS', 'COALINDIA.NS', 'HDFCLIFE.NS', 'HEROMOTOCO.NS', 'HINDALCO.NS', 'ICICIBANK.NS', 'INDUSINDBK.NS', 'ITC.NS', 'KOTAKBANK.NS', 'LT.NS', 'MARUTI.NS', 'MM.NS', 'NESTLEIND.NS', 'NTPC.NS', 'ONGC.NS', 'RELIANCE.NS', 'TATACONSUM.NS', 'TATASTEEL.NS', 'TCS.NS', 'TECHM.NS', 'TITAN.NS', 'ULTRACEMCO.NS', 'WIPRO.NS')
 selected_stock = st.selectbox("Select dataset for prediction",stocks)
 n_years = st.slider("Years of predictions: ",1,4)
 period = n_years*365
