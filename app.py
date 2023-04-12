@@ -64,19 +64,15 @@ scaler = MinMaxScaler()
 X_train = scaler.fit_transform(X_train)
 y_train = scaler.fit_transform(y_train.values.reshape(-X_train.shape[1], 1))
 model = Sequential()
-model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 5)))
-model.add(Dropout(0.2))
-model.add(LSTM(units=50, return_sequences=True))
+model.add(LSTM(units=50, return_sequences=True, input_shape=(X_train.shape[1], 1)))
 model.add(Dropout(0.2))
 model.add(LSTM(units=50, return_sequences=True))
 model.add(Dropout(0.2))
 model.add(LSTM(units=50))
 model.add(Dropout(0.2))
 model.add(Dense(units=1))
-
-# Compile the model
 model.compile(optimizer='adam', loss='mean_squared_error')
-
+    
 # Early stopping callback to prevent overfitting
 from tensorflow.keras.callbacks import EarlyStopping
 early_stop = EarlyStopping(monitor='val_loss', patience=10)
