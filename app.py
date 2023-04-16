@@ -5,7 +5,7 @@ import yfinance as yf
 from prophet import Prophet
 import plotly.graph_objs as go
 # Set page title
-st.set_page_config(page_title='Stock Prediction App')
+st.set_page_config(page_title='Stock Prediction App',page_icon=":chart_with_upwards_trend:")
 
 # Define function to get stock data
 @st.cache
